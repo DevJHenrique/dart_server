@@ -7,15 +7,17 @@ import 'model/auth_request_model.dart';
 
 @CloudFunction()
 Future<Response> function(Request request) async {
-  var payload = await request.readAsString();
-  var data = json.decode(payload);
-  var decodedData = data['input']['credentials'];
-  var credentials = AuthRequest.fromMap(decodedData);
-  var user = await AccessController().fetchUserPermissions(
-      username: credentials.username, pass: credentials.password);
-  if (user!.error != null) {
-    return Response.ok(
-        ''' 
+  switch (request.url.path) {
+    case "login":
+      var payload = await request.readAsString();
+      var data = json.decode(payload);
+      var decodedData = data['input']['credentials'];
+      var credentials = AuthRequest.fromMap(decodedData);
+      var user = await AccessController().fetchUserPermissions(
+          username: credentials.username, pass: credentials.password);
+      if (user!.error != null) {
+        return Response.ok(
+            ''' 
         {
           "accessToken":
           "${user.error}",
@@ -23,13 +25,13 @@ Future<Response> function(Request request) async {
           true
         }
       ''');
-  } else {
-    user.token = AccessController().generateToken(
-        username: credentials.username,
-        userId: credentials.password,
-        role: user.role!);
-    return Response.ok(
-        ''' 
+      } else {
+        user.token = AccessController().generateToken(
+            username: credentials.username,
+            userId: credentials.password,
+            role: user.role!);
+        return Response.ok(
+            ''' 
         {
           "accessToken":
           "${user.token}",
@@ -37,5 +39,8 @@ Future<Response> function(Request request) async {
           false
         }
       ''');
+      }
+    default:
+      return Response.ok("Page not found");
   }
 }

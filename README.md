@@ -1,4 +1,4 @@
-# Hello world example
+# Dart Server
 
 This example handles HTTP GET requests by responding with 'Hello, World!'.
 
